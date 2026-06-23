@@ -8,13 +8,15 @@ from pydantic import PostgresDsn, SecretStr
 from app.core.logging import InterceptHandler
 from app.core.settings.base import BaseAppSettings
 
+from pathlib import Path
+
 
 class AppSettings(BaseAppSettings):
     debug: bool = False
     docs_url: str = "/docs"
     openapi_prefix: str = ""
     openapi_url: str = "/openapi.json"
-    redoc_url: str = "/redoc"
+    redoc_url: str | None = None
     title: str = "FastAPI example application"
     version: str = "0.0.0"
 
@@ -32,6 +34,9 @@ class AppSettings(BaseAppSettings):
 
     logging_level: int = logging.INFO
     loggers: Tuple[str, str] = ("uvicorn.asgi", "uvicorn.access")
+
+    upload_dir: str = "data/documents"
+    istraceback: bool = True
 
     class Config:
         validate_assignment = True
@@ -54,4 +59,10 @@ class AppSettings(BaseAppSettings):
             logging_logger = logging.getLogger(logger_name)
             logging_logger.handlers = [InterceptHandler(level=self.logging_level)]
 
-        logger.configure(handlers=[{"sink": sys.stderr, "level": self.logging_level}])
+        logger.configure(
+            handlers=[{
+                "sink": sys.stderr,
+                "level": self.logging_level,
+                "backtrace": self.istraceback
+            }]
+        )
