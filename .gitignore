@@ -6,11 +6,16 @@ __pycache__/
 # C extensions
 *.so
 
+#documents
+data/
+# the frontent environment
+dist/
+node_modules/
+
 # Distribution / packaging
 .Python
 build/
 develop-eggs/
-dist/
 downloads/
 eggs/
 .eggs/

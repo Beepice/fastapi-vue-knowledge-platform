@@ -7,19 +7,13 @@ from app.core.settings.app import AppSettings
 from app.db.events import close_db_connection, connect_to_db
 
 
-def create_start_app_handler(
+async def create_start_app_handler(
     app: FastAPI,
     settings: AppSettings,
-) -> Callable:  # type: ignore
-    async def start_app() -> None:
-        await connect_to_db(app, settings)
-
-    return start_app
+) -> None:  # type: ignore
+    await connect_to_db(app, settings)
 
 
-def create_stop_app_handler(app: FastAPI) -> Callable:  # type: ignore
-    @logger.catch
-    async def stop_app() -> None:
+async def create_stop_app_handler(app: FastAPI) -> None:  # type: ignore
+    with logger.catch(message="close_db_connection fail"):
         await close_db_connection(app)
-
-    return stop_app

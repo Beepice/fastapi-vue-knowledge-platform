@@ -35,7 +35,7 @@ async def retrieve_current_user(
     )
 
 
-@router.put("", response_model=UserInResponse, name="users:update-current-user")
+#@router.put("", response_model=UserInResponse, name="users:update-current-user")
 async def update_current_user(
     user_update: UserInUpdate = Body(..., embed=True, alias="user"),
     current_user: User = Depends(get_current_user_authorizer()),

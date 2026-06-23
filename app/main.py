@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException
 from starlette.middleware.cors import CORSMiddleware
+from contextlib import asynccontextmanager
 
 from app.api.errors.http_error import http_error_handler
 from app.api.errors.validation_error import http422_error_handler
@@ -10,12 +11,27 @@ from app.core.config import get_app_settings
 from app.core.events import create_start_app_handler, create_stop_app_handler
 
 
-def get_application() -> FastAPI:
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+import os
+
+@asynccontextmanager
+async def lifespan(application: FastAPI):
+    settings = get_app_settings()
+    settings.configure_logging()
+    await create_start_app_handler(application, settings)
+    yield
+    await create_stop_app_handler(application)
+
+def get_application(lifespan_handler) -> FastAPI:
     settings = get_app_settings()
 
     settings.configure_logging()
 
-    application = FastAPI(**settings.fastapi_kwargs)
+    application = FastAPI(
+        **settings.fastapi_kwargs,
+        lifespan=lifespan_handler
+    )
 
     application.add_middleware(
         CORSMiddleware,
@@ -24,16 +40,6 @@ def get_application() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
-
-    application.add_event_handler(
-        "startup",
-        create_start_app_handler(application, settings),
-    )
-    application.add_event_handler(
-        "shutdown",
-        create_stop_app_handler(application),
-    )
-
     application.add_exception_handler(HTTPException, http_error_handler)
     application.add_exception_handler(RequestValidationError, http422_error_handler)
 
@@ -41,5 +47,15 @@ def get_application() -> FastAPI:
 
     return application
 
+app = get_application(lifespan_handler=lifespan)
 
-app = get_application()
+
+STATIC_DIR = os.path.join(os.path.dirname(__file__), "..", "knowledge-base", "dist")
+app.mount("/assets", StaticFiles(directory=os.path.join(STATIC_DIR, "assets")), name="assets")
+
+@app.get("/{full_path:path}")
+async def serve_spa(full_path: str):
+    file_path = os.path.join(STATIC_DIR, full_path)
+    if os.path.isfile(file_path):
+        return FileResponse(file_path)
+    return FileResponse(os.path.join(STATIC_DIR, "index.html"))
