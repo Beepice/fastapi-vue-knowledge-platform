@@ -56,7 +56,7 @@ async function openDocuments(tool,version,document){
 
 
 const showUploadDialog = ref(false)  // 暂存待上传的文件
-const uploadFile = ref(null)
+const uploadOptions = ref(null)
 const uploadForm = ref({
   toolName: '',
   versionName: '',
@@ -67,35 +67,55 @@ const fileUploadMessage = ref()
 
 // 第1步：文件拖入/选择后，先弹窗
 function handleUpload(options) {
-  uploadFile.value = options.file    // 暂存文件
+  uploadOptions.value = options    // 暂存文件
   showUploadDialog.value = true      // 弹出表单
+
 }
 
 async function doUpload() {  //上传文件到后端
   try {
+  const { file, onProgress, onSuccess, onError } = uploadOptions.value;
   const formData = new FormData()
-  formData.append('file', uploadFile.value)
+  formData.append('file', file)
   formData.append('tool_name', uploadForm.value.toolName)
   formData.append('tool_version', uploadForm.value.versionName)
   formData.append('title', uploadForm.value.title)
   formData.append('tags', uploadForm.value.tags)
 
-  await request.post(
-  '/api/documents/upload_documents',
-  formData,
+  const response = await request.post(
+      '/api/documents/upload_documents',
+      formData,
+      {
+          timeout: 300000,
+          onUploadProgress: (progressEvent) => {
+            const percent = Math.round(
+              (progressEvent.loaded * 100) / progressEvent.total
+            );
+            onProgress({ percent });
+          }
+      }
   )
-
+  ElMessage.closeAll();
   ElMessage.success('上传成功！')
   showUploadDialog.value = false
-  // 清空表单
   uploadForm.value = { toolName: '', versionName: '', title: '', tags: '' }
-  uploadFile.value = null
-  // 刷新侧边栏列表...
   } catch (error) {
-    console.error('上传失败:', error)
     ElMessage.error('上传失败：' + (error.response?.data?.detail || error.message))
   }
 }
+
+const handleProgress = (event) => {
+  const percent = Math.round(event.percent);
+  if (!uploadMessageInstance) {
+      uploadMessageInstance = ElMessage({
+        message: `正在上传... ${percent}%`,
+        type: 'info',
+        duration: 0
+      });
+  } else {
+    uploadMessageInstance.message = `正在上传... ${percent}%`
+  }
+};
 
 </script>
 
@@ -146,6 +166,7 @@ async function doUpload() {  //上传文件到后端
         action=""
         :http-request="handleUpload"
         :show-file-list="false"
+        :on-progress="handleProgress"
         accept=".pdf"
         drag
       >
