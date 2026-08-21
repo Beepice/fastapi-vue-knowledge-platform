@@ -1,6 +1,3 @@
-from dataclasses import dataclass
-from http.client import HTTPException
-
 import pdfplumber
 import pymupdf
 import re
@@ -56,9 +53,18 @@ class PDFParser:
     def close_pdf(
             self
     ):
-        self.document_id = -1
+        logger.debug("完成文件解析，回收内存")
         self.plumber_pf.close()
         self.pymu_pf.close()
+        self.document_id = None
+        self.handled_pdf_path =None
+        self.page_height =None
+        self.page_width = None
+        self.pages = None
+        self.style = None
+        self.heading_level = None
+        self.chunks =None
+        self.figure_models = None
 
     def _order_content(
             self,
@@ -376,6 +382,7 @@ class PDFParser:
     ) -> dict:
         page = self.plumber_pf.pages[page_number]
         real_images = [img for img in page.images if (img["x1"]-img["x0"])>50 and (img["bottom"]-img["top"]) > 50]
+        self.plumber_pf._pages[page_number] = None
         return {
             "images": real_images,
             "page_num": page.page_number,
@@ -387,7 +394,6 @@ class PDFParser:
     ) -> dict:
         imgs = self._get_imgs(page_number)
         caption_results = self._find_caption_for_image(self.pages[page_number], imgs["images"])
-        table_mds = self._table_to_markdown(page_number)
         image_refs = []
         for i, img in enumerate(imgs["images"]):
             cr = caption_results[i] if (caption_results and i < len(caption_results)) else None
@@ -450,7 +456,7 @@ class PDFParser:
     ) -> list[FigureModel] | None:
         root_dir: Path = Path(__file__).resolve().parent.parent.parent
         doc = self.pymu_pf
-        all_image_refs = [image_ref for image_refs in all_page_imgs for image_ref in image_refs["image_refs"]]
+        all_image_refs = [image_ref for page_imgs in all_page_imgs  for image_ref in page_imgs["image_refs"]]
         figuremodels = []
         fig_dir: Path = root_dir / save_path / doc_name
         fig_dir.mkdir(parents=True, exist_ok=True)
@@ -462,6 +468,8 @@ class PDFParser:
             rect = pymupdf.Rect(bbox[0], bbox[1], bbox[2], bbox[3])
             pix = page.get_pixmap(clip=rect, dpi=150)
             pix.save(str(fig_path))
+            #释放内存
+            pix= None
             figuremodels.append(
                 FigureModel(
                     document_id=document_id,
@@ -471,11 +479,14 @@ class PDFParser:
             )
         return figuremodels
 
-    def analyze_figures(
+    def analyze_figures_stream(
             self,
             document_id: int,
             fig_save_path: Path
     ) -> list[FigureModel] | None:
+        """为了避免内存爆炸，必须改成流式处理.
+        plumber_pdf存在缓存机制，占用很高内存
+        """
         handled_pages = [self.get_fig_info(number) for number in range(len(self.plumber_pf.pages))]
         figure_models = self._save_fig(
             document_id,
@@ -483,8 +494,7 @@ class PDFParser:
             handled_pages,
             fig_save_path
         )
-        if figure_models:
-            logger.debug(f"存储图片数量: {len(figure_models)}")
+        logger.debug(f"存储图片数量: {len(figure_models)}")
         self.figure_models = figure_models
         return figure_models
 
@@ -530,6 +540,7 @@ class PDFParser:
                 return None
 
         table_datas = self.plumber_pf.pages[page_number].extract_tables()
+        self.plumber_pf._pages[page_number] = None
         if not table_datas:
             return ""
         results = []
@@ -612,7 +623,8 @@ class PDFParser:
         self._all_order_pages()
         self._remove_header_rooter()
         self.style_classify()
-        self.analyze_figures(document_id,save_fig_path)
+        self.analyze_figures_stream(document_id,save_fig_path)
+        del self.plumber_pf._pages  # 避免清理懒加载后对象失效
         self._merge_table_text()
         self._merge_img_text()
         self.smart_chunk()
