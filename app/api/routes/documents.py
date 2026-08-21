@@ -2,7 +2,7 @@ from typing import List
 from pathlib import Path
 from fastapi import APIRouter, Depends, UploadFile,File,Form,HTTPException
 from starlette.responses import FileResponse
-from starlette.status import HTTP_201_CREATED,  HTTP_404_NOT_FOUND,HTTP_404_NOT_FOUND
+from starlette.status import HTTP_201_CREATED,HTTP_404_NOT_FOUND
 from app.api.dependencies.documents import save_document
 from app.api.dependencies.authentication import get_current_user_authorizer
 from app.api.dependencies.database import get_repository

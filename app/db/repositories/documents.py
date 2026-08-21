@@ -130,6 +130,7 @@ class DocumentsRepository(BaseRepository):
             tool_id=tool_id
         )
         return ToolModel(**tools_row)
+
     async def get_versions_by_tool_id(
         self,
         *,
@@ -140,6 +141,7 @@ class DocumentsRepository(BaseRepository):
             self.connection,
             tool_id=tool_id)
         return [VersionModel(**dict(row)) for row in tool_versions_row]
+
     async def get_documents(
         self,
         *,
@@ -152,3 +154,14 @@ class DocumentsRepository(BaseRepository):
             document_id=document_id
         )
         return [DocumentsModel(**dict(row)) for row in documents_row]
+
+    async def get_document_by_id(
+        self,
+        *,
+        document_id: int
+    )->DocumentsModel:
+        document_row = await queries.get_document_by_id(
+            self.connection,
+            document_id=document_id
+        )
+        return DocumentsModel(**dict(document_row))

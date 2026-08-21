@@ -1,9 +1,3 @@
-<template>
-  <div class="document-view">
-    <iframe :src="pdfUrl" class="pdf-iframe"></iframe>
-  </div>
-</template>
-
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter,useRoute } from 'vue-router'
@@ -33,6 +27,12 @@ onMounted(async () => {
 
 
 </script>
+
+<template>
+  <div class="document-view">
+    <iframe :src="pdfUrl" class="pdf-iframe"></iframe>
+  </div>
+</template>
 
 <style scoped>
 .pdf-iframe {

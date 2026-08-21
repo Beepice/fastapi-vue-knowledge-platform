@@ -8,8 +8,6 @@ from pydantic import PostgresDsn, SecretStr
 from app.core.logging import InterceptHandler
 from app.core.settings.base import BaseAppSettings
 
-from pathlib import Path
-
 
 class AppSettings(BaseAppSettings):
     debug: bool = False
@@ -36,7 +34,10 @@ class AppSettings(BaseAppSettings):
     loggers: Tuple[str, str] = ("uvicorn.asgi", "uvicorn.access")
 
     upload_dir: str = "data/documents"
+    fig_save_dir: str = "data/figures"
     istraceback: bool = True
+
+
 
     class Config:
         validate_assignment = True

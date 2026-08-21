@@ -71,6 +71,12 @@ INNER JOIN tools t ON v.tool_id = t.id
 WHERE title = :title AND v.tool_version =:tool_version AND t.tool_name=:tool_name
 LIMIT 1;
 
+-- name: get-document-by-id^
+SELECT id, title, file_type, file_path, version_id, uploaded_by, updated_at
+FROM documents
+WHERE  id = :document_id
+LIMIT 1;
+
 -- name: get-documents
 SELECT d.id,d.title,d.file_type,d.file_path,d.version_id,d.uploaded_by,d.updated_at,created_at
 FROM documents d

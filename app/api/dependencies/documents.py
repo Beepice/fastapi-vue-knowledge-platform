@@ -1,15 +1,17 @@
 import uuid
 from pathlib import Path
 from os import remove
-
-from fastapi import UploadFile,Depends
+from fastapi import UploadFile
 from app.core.config import get_app_settings
 from app.db.repositories.documents import DocumentsRepository
-from app.models.domain.documents import ToolModel,VersionModel,DocumentsModel
+from app.models.domain.documents import VersionModel,DocumentsModel
 from app.models.domain.users import User
 
+
 HEADER_KEY = "Authorization"
-upload_dir = get_app_settings().upload_dir
+UPLOAD_DIR = get_app_settings().upload_dir
+
+
 
 async def _save_document_file(
         file: UploadFile
@@ -18,8 +20,8 @@ async def _save_document_file(
     unique_name = f"{uuid.uuid4()}{ext}"
 
     root_dir:Path = Path(__file__).resolve().parent.parent.parent.parent
-    file_path:str =  f"{upload_dir}/{unique_name}"
-    real_file_dir:Path = root_dir / upload_dir
+    file_path:str =  f"{UPLOAD_DIR}/{unique_name}"
+    real_file_dir:Path = root_dir / UPLOAD_DIR
     real_file_dir.mkdir(parents=True, exist_ok=True)
 
     with open(root_dir / file_path, "wb") as file_temp:
