@@ -18,10 +18,7 @@ const routes = [
         name: 'DocumentDetail',
         component: () => import('../views/layout/components/DocumentView.vue'),
         props: true
-      },
-      // 后续加的页面都放这里，自动带导航栏
-      // { path: 'entries', component: Entries },
-      // { path: 'search', component: Search },
+      }
     ]
   },
   { path: '/login', component: Login },

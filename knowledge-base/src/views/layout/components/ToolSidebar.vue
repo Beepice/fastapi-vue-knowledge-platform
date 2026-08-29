@@ -195,7 +195,7 @@ async function doUpload() {
         <el-input v-model="uploadForm.title" placeholder="文档标题,取文件名" />
       </el-form-item>
       <el-form-item label="标签">
-        <el-input v-model="uploadForm.tags" placeholder="逗号分隔，如 ATPG,BSCAN" />
+        <el-input v-model="uploadForm.tags" placeholder="必须逗号分隔，如 ATPG,BSCAN" />
       </el-form-item>
     </el-form>
     <template #footer>

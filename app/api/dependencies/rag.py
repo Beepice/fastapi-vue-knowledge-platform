@@ -25,7 +25,7 @@ async def parse_pdf(
     parsed_chunks:list[dict] | None = None
     parsed_figures:list[FigureModel] | None = None
     with PDFParser() as parser:
-        parser.run_parse(document_id,file_path)
+        parser.run_parse(document_id,file_path,FIG_SAVE_PATH)
         parsed_chunks = [chunk for chunk in parser.extract_chunks() if len(chunk["context"]) <10000]
         parsed_figures = parser.extract_figures()
 

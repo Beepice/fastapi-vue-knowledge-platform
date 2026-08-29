@@ -5,6 +5,7 @@
 .. image:: https://img.shields.io/badge/Vue-3.x-brightgreen
 .. image:: https://img.shields.io/badge/PostgreSQL-4169E1?logo=postgresql&logoColor=white
 .. image:: https://img.shields.io/badge/License-MIT-blue
+.. image:: https://img.shields.io/badge/custom%20rag-8A2BE2
 
 
 -------------
@@ -13,6 +14,7 @@
     Based on the fastapi-realworld-example-app(https://github.com/nsidnev/fastapi-realworld-example-app),
     This repository upgrade it to the environment of python3.12 with pydantic2. And delete all of their test works.
     Now, this is a simple personal knowledge platform built with FastAPI and Vue 3, backed by PostgreSQL. It can be deployed locally or with Docker.
+    The version 0.1add service of rag  for test.
 
 Quickstart
 -------------

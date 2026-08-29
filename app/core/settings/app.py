@@ -1,3 +1,4 @@
+from pathlib import Path
 import logging
 import sys
 from typing import Any, Dict, List, Tuple
@@ -34,7 +35,7 @@ class AppSettings(BaseAppSettings):
     loggers: Tuple[str, str] = ("uvicorn.asgi", "uvicorn.access")
 
     upload_dir: str = "data/documents"
-    fig_save_dir: str = "data/figures"
+    fig_save_dir: Path = Path("data") / Path("figures")
     istraceback: bool = True
 
 

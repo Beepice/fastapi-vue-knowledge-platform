@@ -467,7 +467,7 @@ class PDFParser:
             page = doc[page_num]
             rect = pymupdf.Rect(bbox[0], bbox[1], bbox[2], bbox[3])
             pix = page.get_pixmap(clip=rect, dpi=150)
-            pix.save(str(fig_path))
+            pix.save(fig_path)
             #释放内存
             pix= None
             figuremodels.append(
@@ -617,7 +617,7 @@ class PDFParser:
         self,
         document_id:int,
         document_path:Path,
-        save_fig_path:Path = Path("data\\figures")
+        save_fig_path:Path
     ):
         self.open_pdf(document_id,document_path)
         self._all_order_pages()
